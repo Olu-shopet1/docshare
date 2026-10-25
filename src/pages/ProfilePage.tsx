@@ -42,7 +42,7 @@ export function ProfilePage() {
         </div>
 
         {/* Hairline figure */}
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-xl">
           <Terrain play />
         </div>
 
