@@ -1,6 +1,7 @@
 import { ProfileHeader } from '@/components/ProfileHeader';
 import { DocumentCard } from '@/components/DocumentCard';
 import { useDocuments } from '@/context/DocumentContext';
+import { Terrain } from '@lucasmarkes/hairline/react';
 
 export function ProfilePage() {
   const { documents, user } = useDocuments();
@@ -38,6 +39,11 @@ export function ProfilePage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Hairline figure */}
+        <div className="w-full max-w-sm">
+          <Terrain play />
         </div>
 
         {/* Footer */}
