@@ -1,14 +1,11 @@
 import { ProfileHeader } from '@/components/ProfileHeader';
 import { DocumentCard } from '@/components/DocumentCard';
 import { useDocuments } from '@/context/DocumentContext';
+import { openSafeUrl } from '@/lib/safeUrl';
 
 export function ProfilePage() {
   const { documents, user } = useDocuments();
   const activeDocuments = documents.filter(doc => doc.isActive);
-
-  const handleDocumentClick = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
 
   return (
     <div className="space-y-8">
@@ -32,7 +29,7 @@ export function ProfilePage() {
                 <DocumentCard
                   key={document.id}
                   document={document}
-                  onClick={() => handleDocumentClick(document.url)}
+                  onClick={() => openSafeUrl(document.url)}
                   showStats={false}
                 />
               ))}

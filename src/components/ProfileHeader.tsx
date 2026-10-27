@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Github, Linkedin, Twitter, Instagram } from 'lucide-react';
+import { getSafeUrl } from '@/lib/safeUrl';
 
 interface ProfileHeaderProps {
   name: string;
@@ -16,10 +17,10 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ name, bio, avatar, username, socialLinks }: ProfileHeaderProps) {
   const socials = [
-    { icon: Github, url: socialLinks.github, label: 'GitHub' },
-    { icon: Twitter, url: socialLinks.twitter, label: 'Twitter' },
-    { icon: Linkedin, url: socialLinks.linkedin, label: 'LinkedIn' },
-    { icon: Instagram, url: socialLinks.instagram, label: 'Instagram' },
+    { icon: Github, url: getSafeUrl(socialLinks.github), label: 'GitHub' },
+    { icon: Twitter, url: getSafeUrl(socialLinks.twitter), label: 'Twitter' },
+    { icon: Linkedin, url: getSafeUrl(socialLinks.linkedin), label: 'LinkedIn' },
+    { icon: Instagram, url: getSafeUrl(socialLinks.instagram), label: 'Instagram' },
   ].filter(social => social.url);
 
   return (
@@ -47,7 +48,8 @@ export function ProfileHeader({ name, bio, avatar, username, socialLinks }: Prof
           {socials.map((social) => (
             <a
               key={social.label}
-              href={social.url}
+              href={social.url ?? undefined}
+              aria-label={social.label}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"

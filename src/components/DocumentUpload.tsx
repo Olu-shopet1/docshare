@@ -6,6 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Upload, X, FileText, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
 import { useDocuments } from '@/context/DocumentContext';
+import { getSafeUrl } from '@/lib/safeUrl';
+
+const MAX_TITLE_LENGTH = 100;
+const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_URL_LENGTH = 2048;
 
 export function DocumentUpload({ onComplete }: { onComplete?: () => void }) {
   const { addDocument } = useDocuments();
@@ -14,16 +19,24 @@ export function DocumentUpload({ onComplete }: { onComplete?: () => void }) {
   const [url, setUrl] = useState('');
   const [type, setType] = useState<'pdf' | 'link' | 'image' | 'video' | 'figma' | 'notion' | 'doc'>('link');
   const [isDragging, setIsDragging] = useState(false);
+  const [urlError, setUrlError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !url) return;
+    const cleanTitle = title.trim().slice(0, MAX_TITLE_LENGTH);
+    const cleanDescription = description.trim().slice(0, MAX_DESCRIPTION_LENGTH);
+    const safeUrl = getSafeUrl(url.slice(0, MAX_URL_LENGTH));
+    if (!cleanTitle) return;
+    if (!safeUrl) {
+      setUrlError('Please enter a full link starting with http:// or https://');
+      return;
+    }
 
     addDocument({
-      title,
-      description,
-      url,
+      title: cleanTitle,
+      description: cleanDescription,
+      url: safeUrl,
       type,
       isActive: true,
     });
@@ -32,6 +45,7 @@ export function DocumentUpload({ onComplete }: { onComplete?: () => void }) {
     setTitle('');
     setDescription('');
     setUrl('');
+    setUrlError('');
     onComplete?.();
   };
 
@@ -60,6 +74,7 @@ export function DocumentUpload({ onComplete }: { onComplete?: () => void }) {
           placeholder="e.g., My Resume"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          maxLength={MAX_TITLE_LENGTH}
           required
         />
       </div>
@@ -72,6 +87,7 @@ export function DocumentUpload({ onComplete }: { onComplete?: () => void }) {
           placeholder="Add a description for your document"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          maxLength={MAX_DESCRIPTION_LENGTH}
         />
       </div>
 
@@ -81,7 +97,7 @@ export function DocumentUpload({ onComplete }: { onComplete?: () => void }) {
         <select
           id="type"
           value={type}
-          onChange={(e) => setType(e.target.value as any)}
+          onChange={(e) => setType(e.target.value as typeof type)}
           className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <option value="pdf">PDF</option>
@@ -102,9 +118,20 @@ export function DocumentUpload({ onComplete }: { onComplete?: () => void }) {
           type="url"
           placeholder="https://example.com"
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            setUrlError('');
+          }}
+          maxLength={MAX_URL_LENGTH}
+          aria-invalid={!!urlError}
+          aria-describedby={urlError ? 'url-error' : undefined}
           required
         />
+        {urlError && (
+          <p id="url-error" className="text-sm text-destructive">
+            {urlError}
+          </p>
+        )}
       </div>
 
       {/* Drag and Drop Area */}
@@ -129,7 +156,7 @@ export function DocumentUpload({ onComplete }: { onComplete?: () => void }) {
       </Card>
 
       {/* Submit Button */}
-      <Button type="submit" className="w-full" disabled={!title || !url}>
+      <Button type="submit" className="w-full" disabled={!title.trim() || !url.trim()}>
         <Upload className="h-4 w-4" />
         Upload Document
       </Button>

@@ -5,6 +5,7 @@ import { useDocuments } from '@/context/DocumentContext';
 import { FileText, ExternalLink, Image, Video, Figma, FileIcon, Eye, Calendar } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Document } from '@/lib/mockData';
+import { getSafeUrl, openSafeUrl } from '@/lib/safeUrl';
 
 const iconMap = {
   pdf: FileText,
@@ -171,7 +172,8 @@ export function Gallery() {
 
                 {/* Actions */}
                 <Button
-                  onClick={() => window.open(selectedDoc.url, '_blank')}
+                  onClick={() => openSafeUrl(selectedDoc.url)}
+                  disabled={!getSafeUrl(selectedDoc.url)}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 >
                   <ExternalLink className="h-4 w-4" />

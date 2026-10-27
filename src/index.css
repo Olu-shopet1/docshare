@@ -3,9 +3,8 @@
 /* Use shadcn/ui format to extend the configuration */
 /* Add only the styles that your component needs */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source("./");
+@config "../tailwind.config.js";
 
 /* CSS variables and theme definitions */
 :root {
