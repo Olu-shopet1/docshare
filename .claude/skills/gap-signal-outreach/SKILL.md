@@ -33,8 +33,9 @@ Don't use it for cold lead lists that aren't tied to a specific public signal.
 4. **Score each one from 1 to 5** on Relevance, Status gap, Ability to buy, Access and Fit, for a total out of 25. Mark Access as "unknown" unless the user has told you about a relationship.
 5. **Shortlist the top 3–5** and name the most likely internal sponsor role for each, for example CISO, Head of Risk, Head of Public Affairs or COO.
 6. **Draft the openers:** under 80 words each, built around a question, and referring to the specific announcement. No pitching and no attachments. Use the templates in section 5 of the playbook.
-7. **Draft one follow-up** to send on day 3–5 that offers something useful, such as a one-page "what this means for [sector]" note, and outline that note in 5 bullets.
-8. **Add a tracking row** for each shortlisted organisation in the playbook's section 8 format, so the user can paste it into their sheet.
+7. **Match an existing asset:** ask the user (or check their notes) for a deck, framework or briefing they've already built on this topic, and use it as the follow-up offer. Suggest a related skill for the paid follow-on work, for example `bitsight-cve-vendor-exposure`, `tprm-risk-ownership-triage`, `soc-capability-assessor` or `incident-response-playbook`.
+8. **Draft one follow-up** to send on day 3–5 that offers something useful, such as a one-page "what this means for [sector]" note, and outline that note in 5 bullets.
+9. **Add a tracking row** for each shortlisted organisation in the playbook's section 8 format, so the user can paste it into their sheet.
 
 ## Output Format
 
