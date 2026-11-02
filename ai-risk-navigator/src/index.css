@@ -1,0 +1,106 @@
+/* motion-site · profile: cinematic · archetype: full-landing · patterns: video-loop·staggered-fade-rise·whileInView-reveal·sticky-stack·press-scale · critique: P5 T5 C5 R4 A5 V4 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #051a24;
+  --bg-deep: #03121a;
+  --fg: #d7e2ea;
+  --accent: #00d2ff;
+  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+}
+
+/* Focus ring appears instantly — never animated */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---- liquid-glass (verbatim primitive) ---- */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.01);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+    rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+    rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Large surfaces get a real hairline; liquid-glass stays for pills */
+.panel {
+  background: rgba(215, 226, 234, 0.03);
+  border: 1px solid rgba(215, 226, 234, 0.09);
+}
+
+/* Solid panel for stacked cards so the card underneath never shows through */
+.panel-solid {
+  background: #08222f;
+  border: 1px solid rgba(215, 226, 234, 0.1);
+}
+
+.text-glow {
+  text-shadow: 0 0 40px rgba(215, 226, 234, 0.28), 0 0 90px rgba(0, 210, 255, 0.22);
+}
+
+/* ---- hero entrance: fade + rise + de-blur, expo-out, staggered ---- */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+.animate-fade-up { animation: fade-up 1s var(--ease-expo-out) both; }
+.delay-1 { animation-delay: 0.15s; }
+.delay-2 { animation-delay: 0.3s; }
+.delay-3 { animation-delay: 0.45s; }
+
+/* ---- reduced motion (mandatory) ---- */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up { animation: none; opacity: 1; transform: none; filter: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Nav pill sits over scrolling content — denser tint + stronger blur than the hero glass */
+.liquid-glass.nav-tint {
+  background: rgba(5, 26, 36, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}

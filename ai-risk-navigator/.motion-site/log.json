@@ -1,0 +1,9 @@
+[
+  {
+    "date": "2026-11-02",
+    "profile": "cinematic",
+    "archetype": "full-landing",
+    "patterns": ["video-loop", "staggered-fade-rise", "whileInView-reveal", "sticky-stack", "press-scale"],
+    "brief": "Cinematic landing page for AI Risk Navigator — AI security & privacy risk assessment for regulated organisations; job: request an assessment."
+  }
+]
