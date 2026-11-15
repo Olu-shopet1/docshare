@@ -1,0 +1,17 @@
+{
+  "_aadlc_template": "AADLC-TEMPLATE: replace every [bracket], then delete this key",
+  "task": "[key task name]",
+  "allowed_tools": [
+    "[search_docs]",
+    "[draft_reply]"
+  ],
+  "expected_sequence": [
+    "[search_docs]",
+    "[draft_reply]"
+  ],
+  "allowed_domains": [
+    "[docs.example.com]"
+  ],
+  "max_tokens": 8000,
+  "max_tool_calls": 6
+}

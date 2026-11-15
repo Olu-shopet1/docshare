@@ -1,0 +1,7 @@
+{
+  "name": "aadlc-assessor",
+  "version": "0.1.1",
+  "description": "Assess an AI agent project against the AI Agent Development Lifecycle, probe an endpoint you own, produce an executive report, apply fixes on a branch, then clean up.",
+  "author": { "name": "olu-shopet1" },
+  "keywords": ["ai-agents", "assurance", "security", "governance", "aadlc"]
+}

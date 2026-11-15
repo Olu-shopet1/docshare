@@ -1,0 +1,20 @@
+# AADLC-TEMPLATE: replace every [bracket] for this agent, then delete this line
+# LiteLLM proxy: pip install 'litellm[proxy]' && litellm --config ops/litellm-config.yaml
+model_list:
+  - model_name: agent-primary
+    litellm_params:
+      model: "azure/[deployment-name]"        # pin an exact model version in the deployment
+      api_base: os.environ/AZURE_API_BASE
+      api_key: os.environ/AZURE_API_KEY
+      rpm: 60
+      tpm: 100000
+  - model_name: agent-fallback
+    litellm_params:
+      model: "azure/[fallback-deployment]"
+      api_base: os.environ/AZURE_API_BASE
+      api_key: os.environ/AZURE_API_KEY
+router_settings:
+  num_retries: 2
+  timeout: 60
+  fallbacks: [{ "agent-primary": ["agent-fallback"] }]
+# Per-key spend limits: create virtual keys with max_budget and budget_duration.

@@ -1,0 +1,2 @@
+agent_id,name,purpose,tier,autonomy,reach,data,audience,reversibility,owner,risk_owner,status,registered,next_review
+[AG-001 AADLC-TEMPLATE delete this tag],[Agent name],[One-line purpose],[1|2|3],[suggest|act-with-approval|act],[read|internal-write|external],[public|personal|special],[team|staff|public],[none|reversible|hard],[Name],[Name],[design|live|retired],[YYYY-MM-DD],[YYYY-MM-DD]

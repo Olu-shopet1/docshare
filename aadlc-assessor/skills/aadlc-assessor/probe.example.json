@@ -1,0 +1,8 @@
+{
+  "url": "https://your-agent.example/api/chat",
+  "method": "POST",
+  "headers": { "Content-Type": "application/json", "Authorization": "Bearer ${AGENT_API_KEY}" },
+  "body": { "message": "{{prompt}}", "session": "aadlc-probe" },
+  "response_path": "reply",
+  "delay_seconds": 1
+}

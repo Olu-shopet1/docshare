@@ -1,0 +1,67 @@
+# AADLC-TEMPLATE: replace every [bracket] for this agent, then delete this line
+# AADLC agent assurance gates. Action SHAs were current when generated; verify each
+# against its repository and update to the latest release before adopting (runbook G02).
+# scripts/skill_hash.py and scripts/drift_check.py come from the AI Agent Assurance Starter Kit.
+# Replace @latest with exact versions once adopted.
+name: agent-assurance
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 3 * * 1"   # weekly red team (Tier 3) - adjust for your tier
+permissions:
+  contents: read
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@83373cf2f8c4db6e24b41c1a9b086bb9619e9cd3 # v2.3.7
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+  code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - run: pipx run semgrep scan --config auto --error
+  dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with: { scan-type: fs, severity: "CRITICAL,HIGH", exit-code: "1" }
+      - uses: anchore/sbom-action@55dc4ee22412511ee8c3142cbea40418e6cec693 # v0.17.8
+        with: { format: cyclonedx-json, output-file: sbom.cdx.json }
+  skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Verify skill pins and AADLC controls
+        run: python3 scripts/skill_hash.py .agents/skills --verify security/skill-pins.json
+      - name: Scan skills (skills only - never MCP configs in CI)
+        run: pip install uv && uvx snyk-agent-scan@latest --skills .agents/skills
+        env: { SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}" }   # check the tool's README for auth
+  evals:
+    needs: [secrets, code, dependencies, skills]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with: { node-version: "22" }
+      - run: npx promptfoo@latest eval -c evals/promptfooconfig.yaml
+        env: { AGENT_API_KEY: "${{ secrets.AGENT_API_KEY }}" }
+  redteam:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - run: pipx run garak --model_type openai --model_name "[model]" --probes promptinject
+        env: { OPENAI_API_KEY: "${{ secrets.AGENT_API_KEY }}" }
+  drift:
+    needs: [evals]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Drift check against baselines
+        run: python3 scripts/drift_check.py evals/baselines exported-traces.jsonl

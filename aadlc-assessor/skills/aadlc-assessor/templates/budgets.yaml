@@ -1,0 +1,16 @@
+# AADLC-TEMPLATE: replace every [bracket] for this agent, then delete this line
+# Enforce in the agent loop: stop the run when any limit is exceeded. Values are placeholders.
+agent: "[agent name]"
+per_run:
+  max_tokens: 20000
+  max_tool_calls: 15
+  max_cost_usd: 1.00
+  max_time_seconds: 300
+  max_repeat_same_tool: 3     # loop stop
+per_day:
+  max_cost_usd: 50
+storage:
+  output_quota_mb: 500
+  trace_retention_days: 30
+  log_retention_days: 90
+  alert_at_percent: 80
