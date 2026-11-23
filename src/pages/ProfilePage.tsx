@@ -4,52 +4,37 @@ import { useDocuments } from '@/context/DocumentContext';
 
 export function ProfilePage() {
   const { documents, user } = useDocuments();
-  const activeDocuments = documents.filter(doc => doc.isActive);
-
-  const handleDocumentClick = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
+  const activeDocuments = documents.filter((doc) => doc.isActive);
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col items-center gap-8">
-        {/* Profile Header */}
-        <div className="w-full">
-          <ProfileHeader {...user} />
-        </div>
+    <div className="flex flex-col items-center gap-8">
+      <ProfileHeader {...user} />
 
-        {/* Documents Grid */}
-        <div className="w-full">
-          {activeDocuments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-              <div className="text-2xl font-semibold text-muted-foreground">
-                No documents shared yet.
-              </div>
-            </div>
-          ) : (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {activeDocuments.map((document) => (
-                <DocumentCard
-                  key={document.id}
-                  document={document}
-                  onClick={() => handleDocumentClick(document.url)}
-                  showStats={false}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+      <section aria-labelledby="shared-heading" className="w-full">
+        <h2 id="shared-heading" className="sr-only">
+          Shared documents
+        </h2>
+        {activeDocuments.length === 0 ? (
+          <p className="py-12 text-center text-2xl font-semibold text-muted-foreground">
+            No documents shared yet.
+          </p>
+        ) : (
+          <ul role="list" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {activeDocuments.map((document) => (
+              <li key={document.id}>
+                <DocumentCard document={document} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
-        {/* Footer */}
-        <div className="w-full border-t border-border pt-8 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <div className="h-5 w-5 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600" />
-            <p className="text-sm text-muted-foreground">
-              Created with DocShare
-            </p>
-          </div>
-        </div>
-      </div>
+      <footer className="w-full border-t border-border pt-8 text-center">
+        <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <span aria-hidden="true" className="h-5 w-5 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600" />
+          Created with DocShare
+        </p>
+      </footer>
     </div>
   );
 }

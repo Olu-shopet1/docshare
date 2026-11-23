@@ -1,187 +1,147 @@
 import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Eye, Calendar, ExternalLink } from 'lucide-react';
 import { useDocuments } from '@/context/DocumentContext';
-import { FileText, ExternalLink, Image, Video, Figma, FileIcon, Eye, Calendar } from 'lucide-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { iconMap } from '@/components/DocumentCard';
 import { Document } from '@/lib/mockData';
+import { safeHref } from '@/lib/utils';
 
-const iconMap = {
-  pdf: FileText,
-  link: ExternalLink,
-  image: Image,
-  video: Video,
-  figma: Figma,
-  notion: FileIcon,
-  doc: FileText,
-};
+const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
 
 export function Gallery() {
   const { documents } = useDocuments();
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">
-            Gallery
-          </h1>
-          <p className="text-muted-foreground">
-            Browse all your shared documents
-          </p>
-        </div>
+    <div className="flex flex-col gap-6">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold">Gallery</h1>
+        <p className="text-muted-foreground">Browse all your shared documents</p>
+      </div>
 
-        {/* Gallery Grid */}
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      {documents.length === 0 ? (
+        <p className="py-12 text-center text-2xl font-semibold text-muted-foreground">
+          No documents to display
+        </p>
+      ) : (
+        <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {documents.map((doc) => {
             const Icon = iconMap[doc.type];
-            
             return (
-              <Card
-                key={doc.id}
-                onClick={() => setSelectedDoc(doc)}
-                className="group cursor-pointer overflow-hidden border-0 bg-white/95 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]"
-              >
-                <CardContent className="p-0">
-                  {/* Thumbnail */}
-                  <div className="relative h-48 bg-gradient-to-br overflow-hidden">
+              <li key={doc.id}>
+                {/* Clicking the card opens a preview (an action, not navigation),
+                    so the stretched control is a <button>. */}
+                <article className="card group h-full overflow-hidden rounded-lg bg-card text-card-foreground shadow-lg transition-shadow hover:shadow-2xl motion-safe:transition-[box-shadow,scale] motion-safe:duration-300 motion-safe:hover:scale-[1.02]">
+                  <div className="relative overflow-hidden">
                     {doc.thumbnail ? (
                       <img
                         src={doc.thumbnail}
-                        alt={doc.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        alt=""
+                        width={400}
+                        height={300}
+                        loading="lazy"
+                        decoding="async"
+                        className="aspect-[4/3] h-48 w-full object-cover motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-110"
                       />
                     ) : (
-                      <div className="w-full h-full bg-muted flex items-center justify-center">
-                        <Icon className="h-12 w-12 text-muted-foreground" />
+                      <div className="flex h-48 w-full items-center justify-center bg-muted">
+                        <Icon aria-hidden="true" className="h-12 w-12 text-muted-foreground" />
                       </div>
                     )}
-                    
-                    {/* Overlay on hover */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center" />
-                    
-                    {/* Type badge */}
-                    <div className="absolute top-2 right-2 bg-black/70 text-white text-xs font-semibold px-2 py-1 rounded">
+
+                    <span className="absolute right-2 top-2 rounded bg-black/70 px-2 py-1 text-xs font-semibold text-white">
                       {doc.type}
-                    </div>
-                    
-                    {/* Active indicator */}
+                    </span>
+
                     {!doc.isActive && (
-                      <div className="absolute bottom-2 left-2 bg-yellow-500/90 text-black text-xs font-semibold px-2 py-1 rounded">
+                      <span className="absolute bottom-2 left-2 rounded bg-yellow-400 px-2 py-1 text-xs font-semibold text-black">
                         Hidden
-                      </div>
+                      </span>
                     )}
                   </div>
 
-                  {/* Info */}
-                  <div className="p-4 space-y-3">
+                  <div className="space-y-3 p-4">
                     <div className="space-y-1">
-                      <h3 className="font-semibold line-clamp-2">
-                        {doc.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {doc.description}
-                      </p>
+                      <h2 className="line-clamp-2 font-semibold">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDoc(doc)}
+                          className="card-link text-start"
+                        >
+                          {doc.title}
+                        </button>
+                      </h2>
+                      <p className="line-clamp-2 text-sm text-muted-foreground">{doc.description}</p>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
-                      <div className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
+                    <div className="flex items-center justify-between border-t pt-2 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Eye aria-hidden="true" className="h-3 w-3" />
                         {doc.clicks.toLocaleString()} views
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(doc.uploadDate).toLocaleDateString()}
-                      </div>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Calendar aria-hidden="true" className="h-3 w-3" />
+                        <time dateTime={doc.uploadDate}>{dateFormat.format(new Date(doc.uploadDate))}</time>
+                      </span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </article>
+              </li>
             );
           })}
-        </div>
+        </ul>
+      )}
 
-        {documents.length === 0 && (
-          <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-            <div className="text-2xl font-semibold text-muted-foreground">
-              No documents to display
-            </div>
-          </div>
-        )}
-
-        {/* Preview Dialog */}
-        <Dialog open={!!selectedDoc} onOpenChange={() => setSelectedDoc(null)}>
-          <DialogContent className="max-w-2xl">
-            {selectedDoc && (
-              <div className="space-y-6">
-                {/* Header */}
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-bold">
-                    {selectedDoc.title}
-                  </h2>
-
-                  <p className="text-muted-foreground">
-                    {selectedDoc.description}
-                  </p>
-                </div>
-
-                {/* Thumbnail */}
-                {selectedDoc.thumbnail && (
-                  <div className="rounded-lg overflow-hidden">
-                    <img
-                      src={selectedDoc.thumbnail}
-                      alt={selectedDoc.title}
-                      className="w-full h-auto"
-                    />
-                  </div>
-                )}
-
-                {/* Stats */}
-                <div className="grid gap-4 grid-cols-3">
-                  <div className="space-y-1">
-                    <div className="text-2xl font-bold">
-                      {selectedDoc.clicks}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Views
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="text-2xl font-bold capitalize">
-                      {selectedDoc.type}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Type
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="text-lg font-bold">
-                      {selectedDoc.isActive ? 'Active' : 'Hidden'}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Status
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <Button
-                  onClick={() => window.open(selectedDoc.url, '_blank')}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Open Document
-                </Button>
+      {/* Preview dialog */}
+      <Dialog open={!!selectedDoc} onOpenChange={(open) => !open && setSelectedDoc(null)}>
+        <DialogContent className="max-w-2xl">
+          {selectedDoc && (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <DialogTitle className="text-2xl font-bold">{selectedDoc.title}</DialogTitle>
+                <DialogDescription>{selectedDoc.description}</DialogDescription>
               </div>
-            )}
-          </DialogContent>
-        </Dialog>
-      </div>
+
+              {selectedDoc.thumbnail && (
+                <img
+                  src={selectedDoc.thumbnail}
+                  alt=""
+                  width={400}
+                  height={300}
+                  className="aspect-[4/3] h-auto w-full rounded-lg object-cover"
+                />
+              )}
+
+              <dl className="grid grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <dt className="text-xs text-muted-foreground">Views</dt>
+                  <dd className="text-2xl font-bold">{selectedDoc.clicks.toLocaleString()}</dd>
+                </div>
+                <div className="space-y-1">
+                  <dt className="text-xs text-muted-foreground">Type</dt>
+                  <dd className="text-2xl font-bold capitalize">{selectedDoc.type}</dd>
+                </div>
+                <div className="space-y-1">
+                  <dt className="text-xs text-muted-foreground">Status</dt>
+                  <dd className="text-lg font-bold">{selectedDoc.isActive ? 'Active' : 'Hidden'}</dd>
+                </div>
+              </dl>
+
+              {/* A real link (not window.open) so it can't hand the new tab control of this page. */}
+              <a
+                href={safeHref(selectedDoc.url)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 px-4 text-sm font-medium text-white hover:from-blue-700 hover:to-purple-700"
+              >
+                <ExternalLink aria-hidden="true" className="h-4 w-4" />
+                Open document
+                <span className="sr-only">(opens in a new tab)</span>
+              </a>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

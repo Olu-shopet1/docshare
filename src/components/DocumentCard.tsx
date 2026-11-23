@@ -1,14 +1,13 @@
-import { Card, CardContent } from '@/components/ui/card';
 import { FileText, ExternalLink, Image, Video, Figma, FileIcon, Eye } from 'lucide-react';
 import { Document } from '@/lib/mockData';
+import { safeHref } from '@/lib/utils';
 
 interface DocumentCardProps {
   document: Document;
-  onClick?: () => void;
   showStats?: boolean;
 }
 
-const iconMap = {
+export const iconMap = {
   pdf: FileText,
   link: ExternalLink,
   image: Image,
@@ -28,51 +27,49 @@ const gradientMap = {
   doc: 'from-indigo-500 to-blue-600',
 };
 
-export function DocumentCard({ document, onClick, showStats = false }: DocumentCardProps) {
+/**
+ * A single-destination card: the heading link opens the document and is
+ * stretched over the whole card, so the entire card is clickable while
+ * staying a real, keyboard-reachable link.
+ */
+export function DocumentCard({ document, showStats = false }: DocumentCardProps) {
   const Icon = iconMap[document.type];
   const gradient = gradientMap[document.type];
 
   return (
-    <Card
-      onClick={onClick}
-      className="group cursor-pointer overflow-hidden border-0 bg-gradient-to-br shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-    >
-      <CardContent className="p-0">
-        <div className="relative h-32 bg-gradient-to-br overflow-hidden flex items-center justify-center">
-          {/* Icon */}
-          <div
-            className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
+    <article className="card group overflow-hidden rounded-lg bg-card text-card-foreground shadow-lg transition-shadow hover:shadow-xl motion-safe:transition-[box-shadow,scale] motion-safe:duration-300 motion-safe:hover:scale-105">
+      <div
+        aria-hidden="true"
+        className={`flex h-32 items-center justify-center bg-gradient-to-br ${gradient}`}
+      >
+        <Icon className="h-12 w-12 text-white opacity-80 motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-110" />
+      </div>
+
+      <div className="space-y-1 p-4">
+        <h3 className="font-semibold">
+          <a
+            href={safeHref(document.url)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="card-link inline-flex items-center gap-1.5"
           >
-            <Icon className="h-12 w-12 text-white opacity-80" />
-          </div>
+            {document.title}
+            <ExternalLink aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="sr-only">(opens in a new tab)</span>
+          </a>
+        </h3>
 
-          {/* Content */}
-          <div className="absolute inset-0 p-4 flex flex-col justify-end bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-            <h3 className="font-semibold text-white">
-              {document.title}
-            </h3>
+        {document.description && (
+          <p className="text-sm text-muted-foreground">{document.description}</p>
+        )}
 
-            <p className="text-sm text-white/80">
-              {document.description}
-            </p>
-
-            {showStats && (
-              <div className="flex items-center gap-1 mt-2 text-white/70">
-                <Eye className="h-3 w-3" />
-                {document.clicks.toLocaleString()} views
-              </div>
-            )}
-          </div>
-
-          {/* Arrow indicator */}
-          <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <ExternalLink className="h-5 w-5 text-white" />
-          </div>
-        </div>
-
-        {/* Bottom shine effect */}
-        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-white/0 via-white/50 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-      </CardContent>
-    </Card>
+        {showStats && (
+          <p className="flex items-center gap-1 pt-1 text-xs text-muted-foreground">
+            <Eye aria-hidden="true" className="h-3 w-3" />
+            {document.clicks.toLocaleString()} views
+          </p>
+        )}
+      </div>
+    </article>
   );
 }

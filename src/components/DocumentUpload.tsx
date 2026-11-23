@@ -1,88 +1,98 @@
-import { useState, useRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, X, FileText, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
+import { Plus, AlertCircle } from 'lucide-react';
 import { useDocuments } from '@/context/DocumentContext';
+import { Document } from '@/lib/mockData';
+
+/**
+ * Keeps aria-invalid / aria-describedby in step with the CSS :user-invalid
+ * state, so screen readers hear the same error that sighted users see.
+ */
+function syncValidity(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
+  const invalid = el.matches(':user-invalid');
+  el.setAttribute('aria-invalid', String(invalid));
+  const errorId = el.dataset.error;
+  if (!errorId) return;
+  const ids = (el.getAttribute('aria-describedby') ?? '').split(/\s+/).filter((id) => id && id !== errorId);
+  if (invalid) ids.push(errorId);
+  if (ids.length) el.setAttribute('aria-describedby', ids.join(' '));
+  else el.removeAttribute('aria-describedby');
+}
+
+const validityHandlers = {
+  'aria-invalid': false,
+  onBlur: (e: React.FocusEvent<HTMLInputElement>) => syncValidity(e.currentTarget),
+  onInvalid: (e: React.FormEvent<HTMLInputElement>) => syncValidity(e.currentTarget),
+  onInput: (e: React.FormEvent<HTMLInputElement>) => {
+    if (e.currentTarget.getAttribute('aria-invalid') === 'true') syncValidity(e.currentTarget);
+  },
+} as const;
+
+function FieldError({ id, children }: { id: string; children: React.ReactNode }) {
+  return (
+    <p id={id} className="error-msg items-center gap-1.5 text-sm text-destructive">
+      <AlertCircle role="img" aria-label="Error" className="h-4 w-4 shrink-0" />
+      {children}
+    </p>
+  );
+}
 
 export function DocumentUpload({ onComplete }: { onComplete?: () => void }) {
   const { addDocument } = useDocuments();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [url, setUrl] = useState('');
-  const [type, setType] = useState<'pdf' | 'link' | 'image' | 'video' | 'figma' | 'notion' | 'doc'>('link');
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [type, setType] = useState<Document['type']>('link');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !url) return;
-
-    addDocument({
-      title,
-      description,
-      url,
-      type,
-      isActive: true,
-    });
-
-    // Reset form
+    addDocument({ title, description, url, type, isActive: true });
     setTitle('');
     setDescription('');
     setUrl('');
     onComplete?.();
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    // Handle file drop if needed
-  };
-
   return (
+    // The browser checks required fields and the URL format before this submits.
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Title */}
       <div className="space-y-2">
         <Label htmlFor="title">Title</Label>
         <Input
           id="title"
-          placeholder="e.g., My Resume"
+          name="title"
+          placeholder="e.g. My resume"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
+          data-error="title-error"
+          {...validityHandlers}
         />
+        <FieldError id="title-error">Enter a title for your document.</FieldError>
       </div>
 
-      {/* Description */}
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">Description (optional)</Label>
         <Textarea
           id="description"
-          placeholder="Add a description for your document"
+          name="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          className="field-sizing-content max-h-[10lh] min-h-[3lh]"
         />
       </div>
 
-      {/* Type */}
       <div className="space-y-2">
-        <Label htmlFor="type">Document Type</Label>
+        <Label htmlFor="type">Document type</Label>
         <select
           id="type"
+          name="type"
           value={type}
-          onChange={(e) => setType(e.target.value as any)}
-          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          onChange={(e) => setType(e.target.value as Document['type'])}
+          className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <option value="pdf">PDF</option>
           <option value="link">Link</option>
@@ -94,44 +104,31 @@ export function DocumentUpload({ onComplete }: { onComplete?: () => void }) {
         </select>
       </div>
 
-      {/* URL/Link */}
       <div className="space-y-2">
-        <Label htmlFor="url">URL</Label>
+        <Label htmlFor="url">Web address</Label>
+        <p id="url-hint" className="text-xs text-muted-foreground">
+          Starts with https://
+        </p>
         <Input
           id="url"
+          name="url"
           type="url"
+          inputMode="url"
           placeholder="https://example.com"
+          pattern="https?://.+"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           required
+          aria-describedby="url-hint"
+          data-error="url-error"
+          {...validityHandlers}
         />
+        <FieldError id="url-error">Enter a web address that starts with https://, for example https://example.com.</FieldError>
       </div>
 
-      {/* Drag and Drop Area */}
-      <Card
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        className={`border-2 border-dashed cursor-pointer transition-colors ${
-          isDragging ? 'border-primary bg-primary/5' : 'border-border'
-        }`}
-      >
-        <CardContent className="flex flex-col items-center justify-center gap-2 py-8">
-          <Upload className="h-8 w-8 text-muted-foreground" />
-          <p className="text-sm font-medium">Drag and drop a file here</p>
-          <p className="text-xs text-muted-foreground">or click to browse</p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-          />
-        </CardContent>
-      </Card>
-
-      {/* Submit Button */}
-      <Button type="submit" className="w-full" disabled={!title || !url}>
-        <Upload className="h-4 w-4" />
-        Upload Document
+      <Button type="submit" className="w-full">
+        <Plus aria-hidden="true" className="h-4 w-4" />
+        Add document
       </Button>
     </form>
   );

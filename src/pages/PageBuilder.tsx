@@ -42,7 +42,7 @@ export function PageBuilder() {
     <div className="space-y-8">
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1">
             <h1 className="text-3xl font-bold">
               Page Builder
@@ -56,13 +56,13 @@ export function PageBuilder() {
             <Button
               onClick={() => setPreviewMode(!previewMode)}
               variant="outline"
-              className={previewMode ? 'bg-white text-purple-600' : 'bg-white/10 text-white border-white/20'}
+              aria-pressed={previewMode}
             >
-              <Eye className="h-4 w-4" />
-              {previewMode ? 'Edit Mode' : 'Preview'}
+              <Eye aria-hidden="true" className="h-4 w-4" />
+              Preview
             </Button>
             <Button className="gap-2">
-              <Save className="h-4 w-4" />
+              <Save aria-hidden="true" className="h-4 w-4" />
               Save Changes
             </Button>
           </div>
@@ -74,9 +74,11 @@ export function PageBuilder() {
             <div className="lg:col-span-1">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    Settings
+                  <CardTitle>
+                    <h2 className="flex items-center gap-2">
+                      <Settings aria-hidden="true" className="h-4 w-4" />
+                      Settings
+                    </h2>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -95,7 +97,7 @@ export function PageBuilder() {
                       {sections.map((section) => (
                         <div key={section.id} className="flex items-center justify-between gap-2 p-3 border rounded-lg">
                           <div className="flex items-center gap-3 flex-1">
-                            <GripVertical className="h-4 w-4 text-muted-foreground" />
+                            <GripVertical aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
                             <div className="flex-1">
                               <p className="font-semibold capitalize">
                                 {section.type}
@@ -110,9 +112,9 @@ export function PageBuilder() {
                             variant="ghost"
                             size="sm"
                             onClick={() => toggleSection(section.id)}
-                            className={section.enabled ? 'text-green-600' : 'text-gray-400'}
                           >
                             {section.enabled ? 'Hide' : 'Show'}
+                            <span className="sr-only"> {section.type} section</span>
                           </Button>
                         </div>
                       ))}
@@ -122,8 +124,9 @@ export function PageBuilder() {
                     <TabsContent value="theme" className="space-y-4 mt-4">
                       <div className="space-y-3">
                         <div className="space-y-2">
-                          <Label>Primary Color</Label>
+                          <Label htmlFor="primaryColor">Primary Color</Label>
                           <Input
+                            id="primaryColor"
                             type="color"
                             value={theme.primaryColor}
                             onChange={(e) =>
@@ -134,8 +137,9 @@ export function PageBuilder() {
                         </div>
 
                         <div className="space-y-2">
-                          <Label>Secondary Color</Label>
+                          <Label htmlFor="secondaryColor">Secondary Color</Label>
                           <Input
+                            id="secondaryColor"
                             type="color"
                             value={theme.secondaryColor}
                             onChange={(e) =>
@@ -146,8 +150,9 @@ export function PageBuilder() {
                         </div>
 
                         <div className="space-y-2">
-                          <Label>Background Color</Label>
+                          <Label htmlFor="backgroundColor">Background Color</Label>
                           <Input
+                            id="backgroundColor"
                             type="color"
                             value={theme.backgroundColor}
                             onChange={(e) =>
@@ -160,6 +165,7 @@ export function PageBuilder() {
                         <div className="space-y-2">
                           <p className="text-sm font-medium">Preview</p>
                           <div
+                            aria-hidden="true"
                             className="w-full h-32 rounded-lg border"
                             style={{
                               backgroundColor: theme.backgroundColor,
@@ -178,30 +184,33 @@ export function PageBuilder() {
           <div className={previewMode ? 'lg:col-span-3' : 'lg:col-span-2'}>
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  Live Preview
+                <CardTitle>
+                  <h2 className="flex items-center gap-2">
+                    <Eye aria-hidden="true" className="h-4 w-4" />
+                    Live Preview
+                  </h2>
                 </CardTitle>
               </CardHeader>
               <CardContent
                 style={{
                   backgroundColor: theme.backgroundColor,
                 }}
-                className="rounded-lg space-y-8 p-6"
+                className="rounded-lg space-y-8 p-6 text-neutral-950 [color-scheme:light]"
               >
                 {/* Hero Section */}
                 {sections.find(s => s.type === 'hero')?.enabled && (
                   <div className="flex flex-col items-center gap-4 py-8">
                     <div
+                      aria-hidden="true"
                       className="w-24 h-24 rounded-full"
                       style={{ backgroundColor: theme.primaryColor }}
                     />
 
                     <div className="text-center space-y-2">
-                      <h1 className="text-3xl font-bold">
+                      <p className="text-3xl font-bold">
                         {user.name}
-                      </h1>
-                      <p className="text-muted-foreground">
+                      </p>
+                      <p className="text-neutral-600">
                         {user.bio}
                       </p>
                     </div>
@@ -211,7 +220,7 @@ export function PageBuilder() {
                 {/* Documents Section */}
                 {sections.find(s => s.type === 'documents')?.enabled && (
                   <div className="space-y-4">
-                    <h2 className="text-2xl font-bold">My Links</h2>
+                    <h3 className="text-2xl font-bold">My Links</h3>
                     <div className="grid gap-3">
                       {[1, 2, 3].map((i) => (
                         <div
@@ -229,9 +238,9 @@ export function PageBuilder() {
                 {/* About Section */}
                 {sections.find(s => s.type === 'about')?.enabled && (
                   <div className="space-y-4">
-                    <h2 className="text-2xl font-bold">About</h2>
+                    <h3 className="text-2xl font-bold">About</h3>
                     <div className="p-4 border rounded-lg">
-                      <p className="text-muted-foreground">
+                      <p className="text-neutral-600">
                         This is a customizable about section where you can share more details about yourself, your work, or your interests.
                       </p>
                     </div>
@@ -241,9 +250,9 @@ export function PageBuilder() {
                 {/* Contact Section */}
                 {sections.find(s => s.type === 'contact')?.enabled && (
                   <div className="space-y-4">
-                    <h2 className="text-2xl font-bold">Get in Touch</h2>
+                    <h3 className="text-2xl font-bold">Get in Touch</h3>
                     <div className="p-4 border rounded-lg">
-                      <p className="text-muted-foreground">
+                      <p className="text-neutral-600">
                         Contact form would go here
                       </p>
                     </div>
